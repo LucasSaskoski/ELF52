@@ -1,26 +1,6 @@
         PUBLIC  __iar_program_start
         EXTERN  __vector_table
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; seção de constantes em ROM
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-        SECTION .rodata:CONST(2)
-        DATA
-ROM08   DC8  "Sistemas Microcontrolados\r\n"
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; seção de variáveis não inicializadas em RAM
-;; ver arquivo de configuração do linker (my_cortex.icf)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-        SECTION .noinit:DATA(2) ,0x20000000 ; início da RAM
-        DATA
-RAM08   DS8  28
-
-
-
         SECTION .text:CODE:REORDER(2)
         
         ;; Keep vector table even if it's not referenced
@@ -103,22 +83,6 @@ main:   MOV R2, #(UART0_BIT)
 	LDR R0, =UART_PORT0_BASE
         BL UART_config ; configura periférico UART0
         
-        // não há necessidade de alocar a string em ram, foi possível 
-        // transmitir diretamente da rom.
-        ; inicializa variáveis
-        PUSH {R0 - R3}
-        LDR R0, =ROM08 ; ponteiro de origem
-        LDR R1, =RAM08 ; ponteiro de destino
-        MOV R2, #28    ; número de elementos - inclui '\0'
-volta   CBZ R2, prox1
-        SUB R2, R2, #1
-        LDRB R3, [R0, R2] ; leitura
-        STRB R3, [R1, R2] ; escrita
-        B volta
-prox1
-        POP {R0-R3}
-        
-        
         ; recepção e envio de dados pela UART utilizando sondagem (polling)
         ; resulta em um "eco": dados recebidos são retransmitidos pela UART
 
@@ -127,51 +91,28 @@ wrx:    LDR R2, [R0, #UART_FR] ; status da UART
         TST R2, #RXFF_BIT ; receptor cheio?
         BEQ wrx
         LDR R1, [R0] ; lê do registrador de dados da UART0 (recebe)
-
-/////////////////////// debug ///////////
-//// descomente estas linhas para ter o eco dos caracteres digitados
-//// utilizado para testar os parâmetros de configuração da UART
-//
-//wtxdebug:    LDR R2, [R0, #UART_FR] ; status da UART
-//        TST R2, #TXFE_BIT ; transmissor vazio?
-//        BEQ wtxdebug
-//        STR R1, [R0] ; escreve no registrador de dados da UART0 (transmite)
-//
-//////////////////// debug ////////// 
         
+        CMP R1, #0x0d
+        BEQ carrega 
+        B wrx
         
-        CMP R1, #0x0d ; #'\r'
-        IT EQ
-          BEQ transmite  ;; sege para transmissão da mensagem
-        B loop  ;; lê outro caractere
+carrega LDR R4 , =ROM08 ;         
+        MOV R3, #0 ; offset
+        MOV R1, #20h
 
-transmite: 
-        LDR R1, =ROM08
-        MOV R4, #0
-transmite_loop
-
-        LDRB R3, [R1, R4] ; carrega caractere - 8bits
-        CMP R3, #0x00    ; testa se caractere é fim de string
-        IT NE
-          BNE wtx
-        B loop       ; se for, fecha o loop
-          
 wtx:    LDR R2, [R0, #UART_FR] ; status da UART
         TST R2, #TXFE_BIT ; transmissor vazio?
         BEQ wtx
-        STR R3, [R0] ; escreve no registrador de dados da UART0 (transmite)
-        ADD R4, #1
         
-        CMP R4, #50
-        BHI saidatransmissao        
+        STR R1, [R0]; escreve no registrador de dados da UART0 (transmite)
+
+        LDRB R1, [R4, R3] ; Carrega byte com offset
+        ADD R3, R3, #1 ; incrementa offset
+
+        CMP R1, #0x00 ; fim da string?
+        BNE wtx ; Se não escreve próximo caractere
         
-        B transmite_loop
-
-saidatransmissao 
-        B loop ; just in case
-
-
-
+        B loop
 
 
 ; SUB-ROTINAS
@@ -200,19 +141,13 @@ UART_config:
         BIC R1, #0x01 ; desabilita UART (bit UARTEN = 0)
         STR R1, [R0, #UART_CTL]
 
-        //; clock = 16MHz, baud rate = 9600 bps
-        // clock = 16MHz, ClkDiv=16
-        // BRD = 3333.33333
-        // IBRD = 3333
-        // FBRD = 22
+        ; clock = 16MHz, baud rate = 9600 bps
         MOV R1, #3333
         STR R1, [R0, #UART_IBRD]
         MOV R1, #22
         STR R1, [R0, #UART_FBRD]
         
-//        ; 8 bits, 1 stop, no parity, FIFOs disabled, no interrupts
-//        MOV R1, #0x60
-        ; 8 bits, 2 stop bits, even parity, FIFOs disabled, no interrupts
+        ; 8 bits, 1 stop, no parity, FIFOs disabled, no interrupts
         MOV R1, #0x6E
         STR R1, [R0, #UART_LCRH]
         
@@ -453,4 +388,9 @@ Button1_int_clear:
 
         BX LR
 
+        SECTION .rodata:CONST(2)
+        DATA
+ROM08   DC8  "Sistemas Microcontrolados"
+        
         END
+  

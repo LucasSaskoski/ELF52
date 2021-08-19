@@ -2840,6 +2840,9 @@
         </settings>
     </configuration>
     <file>
-        <name>$PROJ_DIR$\asm.s</name>
+        <name>$PROJ_DIR$\uart2\src\startup_TM4C1294.s</name>
+    </file>
+    <file>
+        <name>$PROJ_DIR$\uart2\src\uart2.s</name>
     </file>
 </project>

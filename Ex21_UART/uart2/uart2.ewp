@@ -70,11 +70,11 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>9.10.2.39304</state>
+                    <state>8.50.9.33458</state>
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
-                    <state>TM4C129ENCPDT	TexasInstruments TM4C129ENCPDT</state>
+                    <state>TM4C1294NCPDT	TexasInstruments TM4C1294NCPDT</state>
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
@@ -120,7 +120,7 @@
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>TM4C129ENCPDT	TexasInstruments TM4C129ENCPDT</state>
+                    <state>TM4C1294NCPDT	TexasInstruments TM4C1294NCPDT</state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -323,7 +323,7 @@
                 </option>
                 <option>
                     <name>OutputFile</name>
-                    <state>$FILE_BNAME$.o</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCLibConfigHeader</name>
@@ -633,7 +633,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>Ex21_UART.srec</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -651,7 +651,7 @@
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>1</hasPrio>
+                <hasPrio>0</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -744,7 +744,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$TOOLKIT_DIR$\CONFIG\generic_cortex.icf</state>
+                    <state>$TOOLKIT_DIR$\config\linker\TexasInstruments\TM4C1294NC.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -977,7 +977,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state>Ex21_UART_import_lib.o</state>
+                    <state>uart2_import_lib.o</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -2086,9 +2086,9 @@
         </settings>
     </configuration>
     <file>
-        <name>$PROJ_DIR$\uart2\src\startup_TM4C1294.s</name>
+        <name>$PROJ_DIR$\src\startup_TM4C1294.s</name>
     </file>
     <file>
-        <name>$PROJ_DIR$\uart2\src\uart2.s</name>
+        <name>$PROJ_DIR$\src\uart2.s</name>
     </file>
 </project>

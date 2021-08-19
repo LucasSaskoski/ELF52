@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files\IAR Systems\Embedded Workbench 9.0\common\bin\cspybat" -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\settings\Ex21_UART.Debug.general.xcl" --backend -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\settings\Ex21_UART.Debug.driver.xcl" 
+"C:\Program Files\IAR Systems\Embedded Workbench 9.0\common\bin\cspybat" -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\Ex21_UART\settings\Ex21_UART.Debug.general.xcl" --backend -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\Ex21_UART\settings\Ex21_UART.Debug.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files\IAR Systems\Embedded Workbench 9.0\common\bin\cspybat" -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\settings\Ex21_UART.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\settings\Ex21_UART.Debug.driver.xcl" 
+"C:\Program Files\IAR Systems\Embedded Workbench 9.0\common\bin\cspybat" -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\Ex21_UART\settings\Ex21_UART.Debug.general.xcl" "--debug_file=%~1" --backend -f "D:\Documentos\UTFPR\SISTEMAS MICROCONTROLADOS\LAB_2\ELF52\Ex21_UART\settings\Ex21_UART.Debug.driver.xcl" 
 
 @echo off 
 :end
