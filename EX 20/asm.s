@@ -1,4 +1,4 @@
-        PUBLIC  __iar_program_start
+       PUBLIC  __iar_program_start
         PUBLIC  GPIOJ_Handler
         EXTERN  __vector_table
 
@@ -18,65 +18,61 @@ PORTN_BIT               EQU     0001000000000000b ; bit 12 = Port N
 
 ; NVIC definitions
 NVIC_BASE               EQU     0xE000E000
-NVIC_EN1                EQU     0x0104
-VIC_DIS1                EQU     0x0184
-NVIC_PEND1              EQU     0x0204
-NVIC_UNPEND1            EQU     0x0284
-NVIC_ACTIVE1            EQU     0x0304
-NVIC_PRI12              EQU     0x0430
+NVIC_EN1                EQU     0x0104 ; escrita de 1 habilita fonte de interrupção
+VIC_DIS1                EQU     0x0184 ; escrita de 1 desabilita fonte de interrupção
+NVIC_PEND1              EQU     0x0204 ; escrita de 1 define IRQ pendente
+NVIC_UNPEND1            EQU     0x0284 ; escrita de 1 limpa IRQ pendente
+NVIC_ACTIVE1            EQU     0x0304 ; indica se há IRQ ativa
+NVIC_PRI12              EQU     0x0430 ; contém as prioridades da fonte de interrupção
 
 ; GPIO Port definitions
 GPIO_PORTF_BASE    	EQU     0x4005D000
 GPIO_PORTJ_BASE    	EQU     0x40060000
 GPIO_PORTN_BASE    	EQU     0x40064000
-GPIO_DIR                EQU     0x0400
-GPIO_IS                 EQU     0x0404
-GPIO_IBE                EQU     0x0408
-GPIO_IEV                EQU     0x040C
-GPIO_IM                 EQU     0x0410
-GPIO_RIS                EQU     0x0414
-GPIO_MIS                EQU     0x0418
-GPIO_ICR                EQU     0x041C
-GPIO_PUR                EQU     0x0510
-GPIO_DEN                EQU     0x051C
+GPIO_DIR                EQU     0x0400 ; indica terminal de entrada ou saída
+GPIO_IS                 EQU     0x0404 ; indica se interrupção será sensível a nível lógico ou a transição
+GPIO_IBE                EQU     0x0408 ; indica se interrupção será gerada em ambas as transições (subida e descida)
+GPIO_IEV                EQU     0x040C ; indica se interrupção será gerada em transição de subida ou descida
+GPIO_IM                 EQU     0x0410 ; indica se interrupção está habilitada
+GPIO_RIS                EQU     0x0414 ; indica que condições para interrupção ocorreram
+GPIO_MIS                EQU     0x0418 ; indica que condições para interrupção ocorreram e dispara interrupção no NVIC
+GPIO_ICR                EQU     0x041C ; escrita de 1 limpa bits correspondentes em GPIOMIS e GPIORIS
+GPIO_PUR                EQU     0x0510 ; ativação do modo pull-up
+GPIO_DEN                EQU     0x051C ; habilitação de função digital
 
 
 ; ROTINAS DE SERVIÇO DE INTERRUPÇÃO
 
 ; GPIOJ_Handler: Interrupt Service Routine for port GPIO J
-; Utiliza R2 para se comunicar com o programa principal
-
+; Utiliza R11 para se comunicar com o programa principal
 GPIOJ_Handler:
-        
+
         LDR R1, =GPIO_PORTJ_BASE
-        LDR R0, [R1, #GPIO_RIS] ;       leitura do registrador RIS
+        LDR R0, [R1, #GPIO_RIS] ;
         
-        TST R0, #1b ;                   Teste para verificar se houve interrupção bit menos siginificativo                 
-        ITE EQ  ;                       Tratamento                               
-          ADDEQ R11, R11, #1
-          SUBNE R11, R11, #1
+        TST R0, #1b ; 
+        ITE EQ
+         ADDEQ R11, R11, #1 ; 
+         SUBNE R11, R11, #0
+        LDR R2, [R1, #GPIO_RIS] ; 
         
-        TST R0, #10b ;                  Teste para verificar se houve interrupção bit 1   
-        ITE EQ ;                        Tratamento                
-          ADDEQ R11, R11, #1
-          SUBNE R11, R11, #1
+        TST R2, #10b ; 
+        ITE EQ
+         SUBEQ R11, R11, #1 ; 
+         ADDNE R11, R11, #0
          
-        MOV R0, #00000011b ;            ACK do bit 0 e 1 
-        STR R0, [R1, #GPIO_ICR]        ; Limpa registrador ICR
-
+         
         BX LR ; retorno da ISR
-
-
 
 ; PROGRAMA PRINCIPAL
 
 __iar_program_start
         
 main:   MOV R0, #(PORTN_BIT | PORTF_BIT)
-	BL GPIO_enable ; habilita clock aos ports N, F e J
+	BL GPIO_enable ; habilita clock dos ports N, F e J
 
         MOV R0, #(PORTJ_BIT)
-	BL GPIO_enable ; habilita clock aos ports N, F e J
+	BL GPIO_enable ; habilita clock dos ports N, F e J
         
 	LDR R0, =GPIO_PORTN_BASE
         MOV R1, #00000011b ; bits 0 e 1 como saída
@@ -95,6 +91,7 @@ main:   MOV R0, #(PORTN_BIT | PORTF_BIT)
         MOV R11, #0
 loop: 	MOV R0, R11
         BL LED_write
+        BL SW_delay
 
         B loop
 
@@ -168,11 +165,11 @@ GPIO_read:
         BX LR
 
 ; SW_delay: atraso de tempo por software
-; R0 = valor do atraso
-; Destrói: R0
+; R5 = valor do atraso
+; Destrói: R5
 SW_delay:
-        CBZ R0, out_delay
-        SUB R0, R0, #1
+        CBZ R5, out_delay
+        SUB R5, R5, #1
         B SW_delay        
 out_delay:
         BX LR
@@ -222,7 +219,7 @@ last:
 ; Button_int_conf: configura interrupções do botão SW1 do kit
 ; Destrói: R0, R1 e R2
 Button_int_conf:
-        MOV R2, #00000001b ; bit do PJ0
+        MOV R2, #00000011b ; bits 1 e 0 do PJ0
         LDR R1, =GPIO_PORTJ_BASE
         
         LDR R0, [R1, #GPIO_IM]
@@ -230,7 +227,7 @@ Button_int_conf:
         STR R0, [R1, #GPIO_IM]
         
         LDR R0, [R1, #GPIO_IS]
-        BIC R0, R0, R2 ; interrupção por transição
+        ORR R0, R0, R2 ; interrupção por nível lógico
         STR R0, [R1, #GPIO_IS]
         
         LDR R0, [R1, #GPIO_IBE]
@@ -266,10 +263,10 @@ Button_int_conf:
         
         BX LR
 
-; Button1_int_enable: habilita interrupções do botão SW1 do kit
+; Button1_int_enable: habilita interrupções dos botões SW1 e SW2 do kit
 ; Destrói: R0, R1 e R2
 Button1_int_enable:
-        MOV R2, #00000001b ; bit do PJ0
+        MOV R2, #00000011b ; bit do PJ0
         LDR R1, =GPIO_PORTJ_BASE
         
         LDR R0, [R1, #GPIO_IM]
@@ -281,7 +278,7 @@ Button1_int_enable:
 ; Button1_int_disable: desabilita interrupções do botão SW1 do kit
 ; Destrói: R0, R1 e R2
 Button1_int_disable:
-        MOV R2, #00000001b ; bit do PJ0
+        MOV R2, #00000011b ; bits 1 e 0 do PJ0
         LDR R1, =GPIO_PORTJ_BASE
         
         LDR R0, [R1, #GPIO_IM]
@@ -290,10 +287,10 @@ Button1_int_disable:
 
         BX LR
 
-; Button1_int_clear: limpa pendência de interrupções do botão SW1 do kit
+; Button1_int_clear: limpa pendências de interrupções dos botões SW1 e SW2 do kit
 ; Destrói: R0 e R1
 Button1_int_clear:
-        MOV R0, #00000001b ; limpa o bit 0
+        MOV R0, #00000011b ; limpa os bit 0 e 1
         LDR R1, =GPIO_PORTJ_BASE
         STR R0, [R1, #GPIO_ICR]
 
